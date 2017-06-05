@@ -90,7 +90,84 @@
 \begin{frame}
 \frametitle{OpenStack + Neutron}
 \begin{itemize}
-	\item foo
+	\item OpenStack -- nie tylko wirtualizacja CPU i pamięci, ale też pamięci masowej i sieci.
+	\item Neutron -- zarządzanie infrastrukturą sieciową L2/L3 dla potrzeb chmury.
+	\item Różne potrzeby klientów -- konieczność stworzenia bardzo elastycznego mechanizmu wirtualizacji sieci.
+	\item Współpraca z zewnętrzną infrastrukturą sieciową.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Funkcjonalności Neutrona}
+\begin{itemize}
+	\item ML2 
+	\item Layer 3 agents (routing, DHCP).
+	\item Foo as a Service
+	\begin{itemize}
+		\item Firewall as a Service.
+		\item VPN as a Service.
+		\item Load balancer as a Service.
+		\item \dots 
+	\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Architektura sieci w Neutronie}
+\begin{itemize}
+	\item Założenie: każdy projekt w OpenStack może posiadać zupełnie odrębne, niezależne sieci (oddzielna warstwa 2).
+	\item Projekty w OpenStack mogą o sobie na wzajem nic nie wiedzieć.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Sieci ,,tenant''}
+\begin{itemize}
+	\item Domyślna architektura idealna pod potrzeby ,,hostingowe''. 
+	\item Izolacja projektów -- tunelowanie sieci prywatnych
+	\item Jeden punkt styku z siecią fizyczną (na {\tt network node}).
+	\item Instancje maszyn wirtualnych {\em nie mogą} posiadać interfejsów przyłączonych bezpośrednio do sieci fizycznej.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Sieci ,,provider''}
+\begin{itemize}
+	\item Alternatywny sposób konfiguracji Neutrona.
+	\item Sieci {\tt flat} -- bezpośredni dostęp maszyny wirtualnej do sieci fizycznej.
+	\item Separacja sieci projektowych w dalszmy ciągu możliwa:
+	\begin{itemize}
+		\item VLAN
+		\item VXLAN
+		\item Geneve
+		\item \dots
+	\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Integracja Neutrona z zewnętrznymi rozwiązaniami}
+\begin{itemize}
+	\item API REST oferowane przez Neutron.
+	\item Pluginy do zarządzania warstwą 2 i 3.
+	\begin{itemize}
+		\item Cisco Nexus.
+		\item Juniper.
+		\item VMware NSX.
+	\end{itemize}
+	\item Integracja z kontrolerami SDN i NFV.
+	\item OpenContrail.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demo}
+\begin{itemize}
+	\item Demo: utworzenie sieci zewnętrznych.
+	\item Demo: przyłączenie maszyny wirtualnej bezpośrednio do sieci zewnętrznej.
+	\item Demo: utworzenie sieci prywatnej.
+	\item Demo: tworzenie routera między siecią prywatną i zewnętrzną.
+	\item Demo: przyłączenie maszyny wirtualnej do sieci prywatnej.
 \end{itemize}
 \end{frame}
 
