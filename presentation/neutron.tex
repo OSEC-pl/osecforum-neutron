@@ -91,7 +91,7 @@
 \frametitle{OpenStack + Neutron}
 \begin{itemize}
 	\item OpenStack -- nie tylko wirtualizacja CPU i pamięci, ale też pamięci masowej i sieci.
-	\item Neutron -- zarządzanie infrastrukturą sieciową L2/L3 dla potrzeb chmury.
+	\item Neutron -- zarządzanie infrastrukturą sieciową L2/L3 i usługami sieciowymi dla potrzeb chmury.
 	\item Różne potrzeby klientów -- konieczność stworzenia bardzo elastycznego mechanizmu wirtualizacji sieci.
 	\item Współpraca z zewnętrzną infrastrukturą sieciową.
 \end{itemize}
@@ -100,8 +100,8 @@
 \begin{frame}
 \frametitle{Funkcjonalności Neutrona}
 \begin{itemize}
-	\item ML2 
-	\item Layer 3 agents (routing, DHCP).
+	\item Warstwa 2 - sterowniki ML2 (,,mechanism driver'' np. Open vSwitch).
+	\item Warstwa 3 - Layer 3 agents (routing, DHCP\dots).
 	\item Foo as a Service
 	\begin{itemize}
 		\item Firewall as a Service.
@@ -117,32 +117,51 @@
 \begin{itemize}
 	\item Założenie: każdy projekt w OpenStack może posiadać zupełnie odrębne, niezależne sieci (oddzielna warstwa 2).
 	\item Projekty w OpenStack mogą o sobie na wzajem nic nie wiedzieć.
-\end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{Sieci ,,tenant''}
-\begin{itemize}
-	\item Domyślna architektura idealna pod potrzeby ,,hostingowe''. 
-	\item Izolacja projektów -- tunelowanie sieci prywatnych
-	\item Jeden punkt styku z siecią fizyczną (na {\tt network node}).
-	\item Instancje maszyn wirtualnych {\em nie mogą} posiadać interfejsów przyłączonych bezpośrednio do sieci fizycznej.
-\end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{Sieci ,,provider''}
-\begin{itemize}
-	\item Alternatywny sposób konfiguracji Neutrona.
-	\item Sieci {\tt flat} -- bezpośredni dostęp maszyny wirtualnej do sieci fizycznej.
-	\item Separacja sieci projektowych w dalszmy ciągu możliwa:
+	\item Sieci prywatne i publiczne.
+	\item Możliwość routowania między sieciami.
+	\item Mechanizmy separacji sieci (,,type driver''):
 	\begin{itemize}
-		\item VLAN
-		\item VXLAN
-		\item Geneve
+		\item VLAN.
+		\item VXLAN.
+		\item GRE.
+		\item Geneve.
 		\item \dots
 	\end{itemize}
 \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Architektura z centralnym punktem dostępu do sieci zewnętrznej}
+\begin{itemize}
+	\item Domyślna architektura idealna pod potrzeby ,,hostingowe''. 
+	\item Prostota wdrożenia.
+	\item Izolacja projektów -- tunelowanie sieci prywatnych.
+	\item Jeden punkt styku z siecią fizyczną na węźle sieciowym.
+	\item Maszyny wirtualne posiadają interfejsy w sieciach prywatnych (,,projektowych'').
+	\item Instancje maszyn wirtualnych {\em nie mogą} posiadać interfejsów przyłączonych bezpośrednio do sieci fizycznej (brak odp. bridge'y na węzłach obliczeniowych).
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Architektura z centralnym punktem dostępu do sieci zewnętrznej}
+\includegraphics[width=1.00\textwidth]{img-neutron-tenantonly.pdf}
+\end{frame}
+
+\begin{frame}
+\frametitle{Architektura z dostępem do sieci zewnętrznej na każdym węźle obliczeniowym}
+\begin{itemize}
+	\item Alternatywny sposób konfiguracji Neutrona.
+	\item Może być bardziej skomplikowany we wdrożeniu.
+	\item Sieci ,,provider''.
+	\item Type driver {\tt flat} -- dostęp maszyny wirtualnej do sieci fizycznej.
+	\item Type driver {\tt vlan}/{\tt vxlan} -- dostęp do odseparowanego segmentu sieci fizycznej.
+	\item Separacja prywatnych sieci projektowych w dalszym ciągu możliwa.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Architektura z dostępem do sieci zewnętrznej na każdym węźle obliczeniowym}
+\includegraphics[width=1.00\textwidth]{img-neutron-provider.pdf}
 \end{frame}
 
 \begin{frame}
@@ -154,20 +173,61 @@
 		\item Cisco Nexus.
 		\item Juniper.
 		\item VMware NSX.
+		\item \dots
 	\end{itemize}
 	\item Integracja z kontrolerami SDN i NFV.
-	\item OpenContrail.
+	\begin{itemize}
+		\item OpenContrail.
+		\item OpenDaylight.
+		\item \dots
+	\end{itemize}
+	\item Możliwość wykorzystania Neutrona z Red Hat Virtualization.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
-\frametitle{Demo}
+\frametitle{Neutron a zastosowania telco/NFV}
 \begin{itemize}
-	\item Demo: utworzenie sieci zewnętrznych.
-	\item Demo: przyłączenie maszyny wirtualnej bezpośrednio do sieci zewnętrznej.
-	\item Demo: utworzenie sieci prywatnej.
-	\item Demo: tworzenie routera między siecią prywatną i zewnętrzną.
-	\item Demo: przyłączenie maszyny wirtualnej do sieci prywatnej.
+	\item Wymagany bezpośredni dostęp do sieci fizycznej.
+	\item Jak najniższe opóźnienia w transmisji pakietów.
+	\begin{itemize}
+		\item PCI passthrough.
+		\item SR-IOV (karty Intel/Mellanox/QLogic, od OpenStack Juno).
+		\begin{itemize}
+			\item ML2 driver {\tt sriovnicswitch} -- sieci VLAN i flat.
+		\end{itemize}
+		\item DPDK (Open vSwitch data path, od OpenStack Mitaka).
+	\end{itemize}
+	\item Service chaining (OpenStack Ocata) -- obecnie wymaga Open vSwitch.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstracja}
+\begin{itemize}
+	\item Kilka przykładów konfiguracji z wykorzystaniem konfiguracji sieci ,,provider''. 
+	\begin{itemize}
+		\item Demo: utworzenie sieci zewnętrznych.
+		\item Demo: utworzenie maszyny wirtualnej z interfejsem w sieci zewnętrznej.
+		\item Demo: utworzenie sieci prywatnej.
+		\item Demo: utworzenie maszyny wirtualnej z interfejsesm w sieci prywatnej.
+		\item Demo: utworzenie routera między siecią prywatną i zewnętrzną.
+		\item Demo: pływający adres IPv4.
+	\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Podsumowując}
+\begin{itemize}
+	\item Neutron jest elastyczny -- możesz zaimplementować taką architekturę sieci jaka jest Ci potrzebna.
+	\item Możliwość samodzielnego rozszerzania Neutrona przez pluginy.
+	\item Wsparcie dla nowoczesnych standardów na różnych poziomach sieci -- IPv6, SR-IOV, DPDK, itd.
+	\item Jeśli masz inne potrzeby\dots
+	\item Chcesz skonsultować swoją architekturę\dots
+	\item Pragniesz zbudować środowisko {\em proof of concept}...
+	\item Potrzebujesz nowego pluginu\dots
+	\item Odezwij się do nas! 
 \end{itemize}
 \end{frame}
 
